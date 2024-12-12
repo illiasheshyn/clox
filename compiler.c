@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -13,6 +14,28 @@ typedef struct {
   bool hadError;
   bool panicMode;
 } Parser;
+
+typedef enum {
+  PREC_NONE,
+  PREC_ASSIGNMENT, // =
+  PREC_OR,         // or
+  PREC_AND,        // and
+  PREC_EQUALITY,   // == !=
+  PREC_COMPARISON, // < > <= >=
+  PREC_TERM,       // + -
+  PREC_FACTOR,     // * /
+  PREC_UNARY,      // ! -
+  PREC_CALL,       // . ()
+  PREC_PRIMARY
+} Precedence;
+
+typedef void (*ParseFn)();
+
+typedef struct {
+  ParseFn prefix;
+  ParseFn infix;
+  Precedence precedence;
+} ParseRule;
 
 Parser parser;
 Chunk *compilingChunk;
@@ -75,7 +98,76 @@ static void emitBytes(uint8_t byte1, uint8_t byte2) {
 
 static void emitReturn() { emitByte(OP_RETURN); }
 
+static uint8_t makeConstant(Value value) {
+  int constant = addConstant(currentChunk(), value);
+  if (constant > UINT8_MAX) {
+    error("too many constants in one chunk.");
+    return 0;
+  }
+
+  return (uint8_t)constant;
+}
+
+static void emitConstant(Value value) {
+  emitBytes(OP_CONSTANT, makeConstant(value));
+}
+
 static void endCompiler() { emitReturn(); }
+
+static void binary() {
+  TokenType operatorType = parser.previous.type;
+  ParseRule *rule = getRule(operatorType);
+  parsePrecedence((Precedence)(rule->precedence + 1));
+
+  switch (operatorType) {
+  case TOKEN_PLUS:
+    emitByte(OP_ADD);
+    break;
+  case TOKEN_MINUS:
+    emitByte(OP_SUBTRACT);
+    break;
+  case TOKEN_STAR:
+    emitByte(OP_MULTIPLY);
+    break;
+  case TOKEN_SLASH:
+    emitByte(OP_DIVIDE);
+    break;
+  default:
+    return; // Unreachable.
+  }
+}
+
+static void grouping() {
+  expression();
+  consume(TOKEN_RIGHT_PAREN, "expect ')' after expression.");
+}
+
+static void number() {
+  double value = strtod(parser.previous.start, NULL);
+  emitConstant(value);
+}
+
+static void unary() {
+  TokenType operatorType = parser.previous.type;
+
+  // compile the operand.
+  parsePrecedence(PREC_UNARY);
+
+  // emit the operator instruction.
+  switch (operatorType) {
+  case TOKEN_MINUS:
+    emitByte(OP_NEGATE);
+    break;
+  default:
+    return; // unreachable.
+  }
+}
+
+static void parsePrecedence(Precedence precedence) {
+  // what goes here?
+}
+
+static void expression() { parsePrecedence(PREC_ASSIGNMENT); }
 
 bool compile(const char *source, Chunk *chunk) {
   initScanner(source);
