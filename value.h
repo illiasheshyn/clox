@@ -17,6 +17,20 @@ typedef struct {
   } as;
 } Value;
 
+// note: verify expected `Value` type before unwrapping
+#define IS_BOOL(value) ((value).type == VAL_BOOL)
+#define IS_NIL(value) ((value).type == VAL_NIL)
+#define IS_NUMBER(value) ((value).type == VAL_NUMBER)
+
+// note: inherently unsafe to unwrap a `Value` without checking it's type
+#define AS_BOOL(value) ((value).as.boolean)
+#define AS_NUMBER(value) ((value).as.number)
+
+// note: lift C value into Lox's `Value` value
+#define BOOL_VAL(value) ((Value){VAL_BOOL, {.boolean = value}})
+#define NIL_VAL ((Value){VAL_NIL, {.number = 0}})
+#define NUMBER_VAL(value) ((Value){VAL_NUMBER, {.number = value}})
+
 typedef struct {
   int capacity;
   int count;
