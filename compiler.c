@@ -7,6 +7,7 @@
 #include "common.h"
 #include "compiler.h"
 #include "scanner.h"
+#include "value.h"
 
 #ifdef DEBUG_PRINT_CODE
 #include "debug.h"
@@ -159,7 +160,7 @@ static void grouping() {
 
 static void number() {
   double value = strtod(parser.previous.start, NULL);
-  emitConstant(value);
+  emitConstant(NUMBER_VAL(value));
 }
 
 static void unary() {
