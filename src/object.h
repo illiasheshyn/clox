@@ -30,6 +30,7 @@ typedef enum {
 
 struct Obj {
   ObjType type;
+  bool isMarked;
   struct Obj *next;
 };
 
@@ -84,7 +85,7 @@ static inline bool isObjType(Value value, ObjType type) {
 #endif
 
 /*  Design note:
-   The above layour of the `ObjString`, namely `Obj` as the first field of the
+   The above layout of the `ObjString`, namely `Obj` as the first field of the
    structure, allows safe convertion of the `ObjString *pointer` to the `Obj
    *pointer` and back.
 
