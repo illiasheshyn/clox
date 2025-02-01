@@ -281,6 +281,11 @@ static int resolveUpvalue(Compiler *compiler, Token *name) {
   if (compiler->enclosing == NULL)
     return -1;
 
+  int local = resolveLocal(compiler->enclosing, name);
+  if (local != -1) {
+    return addUpvalue(compiler, (uint8_t)local, true);
+  }
+
   int upvalue = resolveUpvalue(compiler->enclosing, name);
   if (upvalue != -1) {
     return addUpvalue(compiler, (uint8_t)upvalue, false);
