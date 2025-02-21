@@ -14,7 +14,6 @@ Bytecode virtual machine for the [Lox programming language], following Part 3 of
 <details>
 <summary>Remaining Chapters</summary>
 
-- 27. Classes and Instances
 - 28. Methods and Initializers
 - 29. Superclasses
 - 30. Optimization 
