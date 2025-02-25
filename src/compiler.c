@@ -693,6 +693,18 @@ static void classDeclaration() {
   classCompiler.enclosing = currentClass;
   currentClass = &classCompiler;
 
+  if (match(TOKEN_LESS)) {
+    consume(TOKEN_IDENTIFIER, "expect superclass name.");
+    variable(false);
+
+    if (identifiersEqual(&className, &parser.previous)) {
+      error("a class can't inherit from itself.");
+    }
+
+    namedVariable(className, false);
+    emitByte(OP_INHERIT);
+  }
+
   namedVariable(className, false);
   consume(TOKEN_LEFT_BRACE, "expect '{' before class body.");
   while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
