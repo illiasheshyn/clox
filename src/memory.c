@@ -10,7 +10,6 @@
 #include "vm.h"
 
 #ifdef DEBUG_LOG_GC
-#include "debug.h"
 #include <stdio.h>
 #endif
 
